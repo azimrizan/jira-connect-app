@@ -1,129 +1,175 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="UTF-8">
-  <title>AAVA Refiner</title>
-  <script src="https://connect-cdn.atl-paas.net/all.js"></script>
+    <meta charset="UTF-8">
+    <title>AAVA Refiner</title>
+    <script src="https://connect-cdn.atl-paas.net/all.js"></script>
 
-  <style>
-    body { font-family: Arial, sans-serif; padding: 10px; }
-    button {
-      background: #0052cc;
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      cursor: pointer;
-      border-radius: 3px;
-    }
-    button:disabled { background: #ccc; }
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 10px;
+        }
 
-    #overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-    }
+        button {
+            background: #0052cc;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
 
-    #modal {
-      background: white;
-      width: 80%;
-      max-width: 600px;
-      margin: 80px auto;
-      padding: 20px;
-      border-radius: 4px;
-    }
+        button:disabled {
+            background: #ccc;
+        }
 
-    pre {
-      background: #f4f5f7;
-      padding: 10px;
-      white-space: pre-wrap;
-    }
-  </style>
+        #overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        #modal {
+            background: white;
+            width: 80%;
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 20px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        pre {
+            background: #f4f5f7;
+            padding: 10px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
 </head>
 
 <body>
 
-<button id="refineBtn" disabled>Refine with AAVA</button>
-<span id="status" style="margin-left:10px;color:#666;">Loading…</span>
+    <button id="refineBtn" disabled>Refine with AAVA</button>
+    <span id="status" style="margin-left:10px;color:#666;">Loading…</span>
 
-<div id="overlay">
-  <div id="modal">
-    <h3>Enhanced Description</h3>
-    <pre id="result"></pre>
-    <div style="display:flex;justify-content:flex-end;gap:10px;">
-      <button id="applyBtn">Replace Description</button>
-      <button onclick="closeModal()" style="background:#ebecf0;color:#42526e;">Cancel</button>
+    <div id="overlay">
+        <div id="modal">
+            <h3>Enhanced Description</h3>
+            <pre id="result"></pre>
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+                <button id="applyBtn">Replace Description</button>
+                <button onclick="closeModal()" style="background:#ebecf0;color:#42526e;">Cancel</button>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<script>
-  let issueKey = '';
-  let currentDesc = '';
-  let enhanced = '';
+    <script>
+        let issueKey = '';
+        let currentDesc = '';
+        let enhanced = '';
 
-  const refineBtn = document.getElementById('refineBtn');
-  const status = document.getElementById('status');
+        const refineBtn = document.getElementById('refineBtn');
+        const statusSpan = document.getElementById('status');
 
-  AP.context.getContext(ctx => {
-    issueKey = ctx.jira.issue.key;
+        // Helper to fetch with JWT
+        async function authenticatedFetch(url, options = {}) {
+            return new Promise((resolve, reject) => {
+                AP.context.getToken(async (token) => {
+                    try {
+                        const res = await fetch(url, {
+                            ...options,
+                            headers: {
+                                ...options.headers,
+                                'Authorization': 'JWT ' + token,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        resolve(res);
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+            });
+        }
 
-    AP.request({
-      url: `/rest/api/3/issue/${issueKey}?expand=renderedFields`,
-      success: res => {
-        const data = JSON.parse(res);
-        currentDesc =
-          data.renderedFields?.description?.replace(/<[^>]+>/g,'') || '';
+        AP.context.getContext(ctx => {
+            issueKey = ctx.jira.issue.key;
 
-        refineBtn.disabled = false;
-        status.innerText = '';
-      },
-      error: () => {
-        status.innerText = 'Failed to load description';
-      }
-    });
-  });
+            AP.request({
+                url: `/rest/api/3/issue/${issueKey}?expand=renderedFields`,
+                success: res => {
+                    const data = JSON.parse(res);
+                    currentDesc =
+                        data.renderedFields?.description?.replace(/<[^>]+>/g, '') || '';
 
-  refineBtn.onclick = async () => {
-    refineBtn.disabled = true;
-    refineBtn.innerText = 'Refining…';
+                    refineBtn.disabled = false;
+                    statusSpan.innerText = '';
+                },
+                error: () => {
+                    statusSpan.innerText = 'Failed to load description';
+                }
+            });
+        });
 
-    try {
-      const res = await fetch('/enhance-description', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentDescription: currentDesc })
-      });
+        refineBtn.onclick = async () => {
+            refineBtn.disabled = true;
+            refineBtn.innerText = 'Refining…';
 
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error);
+            try {
+                const res = await authenticatedFetch('/enhance-description', {
+                    method: 'POST',
+                    body: JSON.stringify({ currentDescription: currentDesc })
+                });
 
-      enhanced = data.enhancedDescription;
-      document.getElementById('result').innerText = enhanced;
-      document.getElementById('overlay').style.display = 'block';
-    } catch (e) {
-      alert(e.message);
-    } finally {
-      refineBtn.disabled = false;
-      refineBtn.innerText = 'Refine with AAVA';
-    }
-  };
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
 
-  document.getElementById('applyBtn').onclick = async () => {
-    await fetch('/update-description', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ issueKey, newDescription: enhanced })
-    });
+                enhanced = data.enhancedDescription;
+                document.getElementById('result').innerText = enhanced;
+                document.getElementById('overlay').style.display = 'block';
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                refineBtn.disabled = false;
+                refineBtn.innerText = 'Refine with AAVA';
+            }
+        };
 
-    closeModal();
-    AP.jira.refreshIssuePage();
-  };
+        document.getElementById('applyBtn').onclick = async () => {
+            const applyBtn = document.getElementById('applyBtn');
+            applyBtn.disabled = true;
+            applyBtn.innerText = 'Applying…';
 
-  function closeModal() {
-    document.getElementById('overlay').style.display = 'none';
-  }
-</script>
+            try {
+                const res = await authenticatedFetch('/update-description', {
+                    method: 'PUT',
+                    body: JSON.stringify({ issueKey, newDescription: enhanced })
+                });
+
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
+
+                closeModal();
+                AP.jira.refreshIssuePage();
+            } catch (e) {
+                alert('Failed to update: ' + e.message);
+            } finally {
+                applyBtn.disabled = false;
+                applyBtn.innerText = 'Replace Description';
+            }
+        };
+
+        function closeModal() {
+            document.getElementById('overlay').style.display = 'none';
+        }
+    </script>
 
 </body>
+
 </html>
