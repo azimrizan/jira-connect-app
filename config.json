@@ -1,0 +1,19 @@
+{
+    "development": {
+        "port": 3000,
+        "errorReporting": true,
+        "store": {
+            "adapter": "sequelize",
+            "dialect": "sqlite",
+            "storage": ":memory:"
+        }
+    },
+    "production": {
+        "port": 8080,
+        "store": {
+            "adapter": "sequelize",
+            "dialect": "sqlite",
+            "storage": ":memory:"
+        }
+    }
+}

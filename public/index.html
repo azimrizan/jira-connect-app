@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AAVA Refiner</title>
+  <script src="https://connect-cdn.atl-paas.net/all.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 10px; }
+    button {
+      background:#0052cc; color:white; border:none;
+      padding:8px 14px; cursor:pointer; border-radius:3px;
+    }
+    button:disabled { background:#ccc; }
+    #overlay {
+      display:none; position:fixed; top:0; left:0;
+      width:100%; height:100%; background:rgba(0,0,0,0.5);
+    }
+    #modal {
+      background:white; width:80%; max-width:600px;
+      margin:80px auto; padding:20px; border-radius:4px;
+    }
+    pre {
+      background:#f4f5f7; padding:10px;
+      white-space:pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<button id="refineBtn">Refine with AAVA</button>
+
+<div id="overlay">
+  <div id="modal">
+    <h3>Enhanced Description</h3>
+    <pre id="result"></pre>
+    <button id="applyBtn">Replace Description</button>
+    <button onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+  let issueKey = '';
+  let currentDesc = '';
+  let enhanced = '';
+
+  AP.context.getContext(ctx => {
+    issueKey = ctx.jira.issue.key;
+    AP.request({
+      url: `/rest/api/3/issue/${issueKey}?expand=renderedFields`,
+      success: res => {
+        const data = JSON.parse(res);
+        currentDesc = data.renderedFields?.description
+          ?.replace(/<[^>]+>/g,'') || '';
+      }
+    });
+  });
+
+  document.getElementById('refineBtn').onclick = async () => {
+    const btn = event.target;
+    btn.disabled = true;
+
+    const res = await fetch('/enhance-description', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ currentDescription: currentDesc })
+    });
+
+    const data = await res.json();
+    btn.disabled = false;
+
+    if (!data.success) return alert(data.error);
+
+    enhanced = data.enhancedDescription;
+    document.getElementById('result').innerText = enhanced;
+    document.getElementById('overlay').style.display = 'block';
+  };
+
+  document.getElementById('applyBtn').onclick = async () => {
+    await fetch('/update-description', {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ issueKey, newDescription: enhanced })
+    });
+
+    closeModal();
+    AP.jira.refreshIssuePage();
+  };
+
+  function closeModal() {
+    document.getElementById('overlay').style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
