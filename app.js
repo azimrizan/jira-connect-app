@@ -5,6 +5,7 @@ const path = require('path');
 const fetch = require('node-fetch');
 
 const app = express();
+app.set('trust proxy', true);
 const addon = ace(app);
 
 app.use(bodyParser.json());

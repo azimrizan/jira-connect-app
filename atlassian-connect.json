@@ -6,9 +6,9 @@
         "name": "AAVA",
         "url": "https://example.com"
     },
-    "baseUrl": "{{localBaseUrl}}",
+    "baseUrl": "https://jira-connect-app.onrender.com",
     "links": {
-        "self": "{{localBaseUrl}}/atlassian-connect.json"
+        "self": "https://jira-connect-app.onrender.com/atlassian-connect.json"
     },
     "authentication": {
         "type": "jwt"
