@@ -1,6 +1,6 @@
 {
     "apiVersion": 1,
-    "key": "aava-description-refiner",
+    "key": "aava-refiner-final",
     "name": "AAVA Description Refiner",
     "description": "Refine Jira issue descriptions using Gemini AI",
     "vendor": {

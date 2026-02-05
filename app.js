@@ -23,26 +23,33 @@ app.get('/health', (req, res) => {
     res.send('AAVA Jira Connect app running ✅');
 });
 
-// Middleware to catch ACE's plain-text 401 and convert to JSON if possible
-// Note: This is a hack because ACE's authenticate() often sends the response directly.
-const wrapAuth = (req, res, next) => {
-    addon.authenticate()(req, res, (err) => {
+/**
+ * Custom authentication wrapper that skips QSH validation.
+ * This is the most reliable way to authenticate AJAX calls from the frontend when 
+ * using AP.context.getToken(), as QSH calculations often fail behind proxies like Render.
+ */
+const authenticateSkipQsh = (req, res, next) => {
+    // Calling authenticate(true) tells ACE to skip the query string hash (qsh) check
+    addon.authenticate(true)(req, res, (err) => {
         if (err) {
             console.error('Auth Error:', err);
-            return res.status(401).json({ success: false, error: 'Authentication failed: ' + (err.message || 'Unknown error') });
+            return res.status(401).json({
+                success: false,
+                error: 'Authentication failed: ' + (err.message || 'Unknown error')
+            });
         }
         next();
     });
 };
 
-// 🔐 Jira Issue Panel
+// 🔐 Jira Issue Panel (This is a page load, so standard auth is usually fine)
 app.get('/render-refiner', addon.authenticate(), (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 // 🔐 Gemini enhancement
-// We use a custom wrapper to return JSON errors instead of plain text
-app.post('/enhance-description', wrapAuth, async (req, res) => {
+// We use skipQsh to resolve the persistent "query hash does not match" error
+app.post('/enhance-description', authenticateSkipQsh, async (req, res) => {
     const { currentDescription } = req.body;
     const apiKey = process.env.GEMINI_API_KEY;
 
@@ -79,7 +86,7 @@ app.post('/enhance-description', wrapAuth, async (req, res) => {
 });
 
 // 🔐 Update Jira description
-app.put('/update-description', wrapAuth, (req, res) => {
+app.put('/update-description', authenticateSkipQsh, (req, res) => {
     const { issueKey, newDescription } = req.body;
     const httpClient = addon.httpClient(req);
 
