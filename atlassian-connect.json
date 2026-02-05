@@ -14,7 +14,7 @@
   "lifecycle": {
     "installed": "/installed"
   },
-  "scopes": ["read", "write"],
+  "scopes": ["READ", "WRITE"],
   "modules": {
     "jiraIssueContents": [
       {
@@ -23,6 +23,9 @@
           "value": "Refine with AAVA"
         },
         "url": "/render-refiner?issueKey={issue.key}",
+        "target": {
+          "type": "web_panel"
+        },
         "tooltip": {
           "value": "Refine issue description with Gemini AI"
         }
