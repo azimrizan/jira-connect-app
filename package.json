@@ -1,20 +1,17 @@
 {
   "name": "jira-connect-app",
   "version": "1.0.0",
-  "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "atlassian-connect-express": "^11.5.3",
     "body-parser": "^1.20.2",
     "express": "^4.19.2",
     "node-fetch": "^2.7.0",
+    "pg": "^8.12.0",
+    "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7"
   }

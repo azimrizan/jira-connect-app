@@ -4,37 +4,56 @@
   <meta charset="UTF-8">
   <title>AAVA Refiner</title>
   <script src="https://connect-cdn.atl-paas.net/all.js"></script>
+
   <style>
     body { font-family: Arial, sans-serif; padding: 10px; }
     button {
-      background:#0052cc; color:white; border:none;
-      padding:8px 14px; cursor:pointer; border-radius:3px;
+      background: #0052cc;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      cursor: pointer;
+      border-radius: 3px;
     }
-    button:disabled { background:#ccc; }
+    button:disabled { background: #ccc; }
+
     #overlay {
-      display:none; position:fixed; top:0; left:0;
-      width:100%; height:100%; background:rgba(0,0,0,0.5);
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
     }
+
     #modal {
-      background:white; width:80%; max-width:600px;
-      margin:80px auto; padding:20px; border-radius:4px;
+      background: white;
+      width: 80%;
+      max-width: 600px;
+      margin: 80px auto;
+      padding: 20px;
+      border-radius: 4px;
     }
+
     pre {
-      background:#f4f5f7; padding:10px;
-      white-space:pre-wrap;
+      background: #f4f5f7;
+      padding: 10px;
+      white-space: pre-wrap;
     }
   </style>
 </head>
+
 <body>
 
-<button id="refineBtn">Refine with AAVA</button>
+<button id="refineBtn" disabled>Refine with AAVA</button>
+<span id="status" style="margin-left:10px;color:#666;">Loading…</span>
 
 <div id="overlay">
   <div id="modal">
     <h3>Enhanced Description</h3>
     <pre id="result"></pre>
-    <button id="applyBtn">Replace Description</button>
-    <button onclick="closeModal()">Cancel</button>
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button id="applyBtn">Replace Description</button>
+      <button onclick="closeModal()" style="background:#ebecf0;color:#42526e;">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -43,43 +62,58 @@
   let currentDesc = '';
   let enhanced = '';
 
+  const refineBtn = document.getElementById('refineBtn');
+  const status = document.getElementById('status');
+
   AP.context.getContext(ctx => {
     issueKey = ctx.jira.issue.key;
+
     AP.request({
       url: `/rest/api/3/issue/${issueKey}?expand=renderedFields`,
       success: res => {
         const data = JSON.parse(res);
-        currentDesc = data.renderedFields?.description
-          ?.replace(/<[^>]+>/g,'') || '';
+        currentDesc =
+          data.renderedFields?.description?.replace(/<[^>]+>/g,'') || '';
+
+        refineBtn.disabled = false;
+        status.innerText = '';
+      },
+      error: () => {
+        status.innerText = 'Failed to load description';
       }
     });
   });
 
-  document.getElementById('refineBtn').onclick = async () => {
-    const btn = event.target;
-    btn.disabled = true;
+  refineBtn.onclick = async () => {
+    refineBtn.disabled = true;
+    refineBtn.innerText = 'Refining…';
 
-    const res = await fetch('/enhance-description', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ currentDescription: currentDesc })
-    });
+    try {
+      const res = await fetch('/enhance-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentDescription: currentDesc })
+      });
 
-    const data = await res.json();
-    btn.disabled = false;
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
 
-    if (!data.success) return alert(data.error);
-
-    enhanced = data.enhancedDescription;
-    document.getElementById('result').innerText = enhanced;
-    document.getElementById('overlay').style.display = 'block';
+      enhanced = data.enhancedDescription;
+      document.getElementById('result').innerText = enhanced;
+      document.getElementById('overlay').style.display = 'block';
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      refineBtn.disabled = false;
+      refineBtn.innerText = 'Refine with AAVA';
+    }
   };
 
   document.getElementById('applyBtn').onclick = async () => {
     await fetch('/update-description', {
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ issueKey, newDescription: enhanced })
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ issueKey, newDescription: enhanced })
     });
 
     closeModal();

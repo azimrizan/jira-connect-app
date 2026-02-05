@@ -2,7 +2,7 @@
   "key": "aava-refiner-connect",
   "name": "AAVA Description Refiner",
   "description": "Refine Jira issue descriptions using Gemini AI",
-  "baseUrl": "https://RENDER_URL_WILL_GO_HERE",
+  "baseUrl": "https://jira-connect-app.onrender.com",
   "vendor": {
     "name": "AAVA",
     "url": "https://example.com"
@@ -13,10 +13,7 @@
   "lifecycle": {
     "installed": "/installed"
   },
-  "scopes": [
-    "read",
-    "write"
-  ],
+  "scopes": ["read", "write"],
   "modules": {
     "jira:issuePanel": [
       {
