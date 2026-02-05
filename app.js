@@ -5,23 +5,26 @@ const path = require('path');
 const fetch = require('node-fetch');
 
 const app = express();
+
+// Trust proxy is required for Render's HTTPS to be detected correctly
 app.set('trust proxy', true);
+
 const addon = ace(app);
 
+// Use ACE's built-in middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(addon.middleware());
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ✅ Health check
-app.get('/', (req, res) => {
+// ✅ Health check (Optional, but let's keep it clean)
+app.get('/health', (req, res) => {
     res.send('AAVA Jira Connect app running ✅');
 });
 
-// ✅ Required lifecycle
-app.post('/installed', (req, res) => {
-    res.sendStatus(200);
-});
+// ❌ REMOVED: app.post('/installed') 
+// ACE handles this automatically. Overriding it breaks authentication.
 
 // 🔐 Jira Issue Panel
 app.get('/render-refiner', addon.authenticate(), (req, res) => {
@@ -95,7 +98,7 @@ app.put('/update-description', addon.authenticate(), (req, res) => {
     });
 });
 
-const PORT = process.env.PORT || addon.config.port();
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
