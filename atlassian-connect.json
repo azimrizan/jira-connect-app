@@ -16,14 +16,13 @@
   },
   "scopes": ["read", "write"],
   "modules": {
-    "jira:issuePanel": [
+    "jiraIssueContents": [
       {
         "key": "aava-refiner-panel",
         "name": {
           "value": "Refine with AAVA"
         },
         "url": "/render-refiner?issueKey={issue.key}",
-        "location": "atl.jira.view.issue.right.context",
         "tooltip": {
           "value": "Refine issue description with Gemini AI"
         }
