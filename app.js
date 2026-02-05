@@ -18,13 +18,22 @@ app.use(addon.middleware());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ✅ Health check (Optional, but let's keep it clean)
+// ✅ Health check
 app.get('/health', (req, res) => {
     res.send('AAVA Jira Connect app running ✅');
 });
 
-// ❌ REMOVED: app.post('/installed') 
-// ACE handles this automatically. Overriding it breaks authentication.
+// Middleware to catch ACE's plain-text 401 and convert to JSON if possible
+// Note: This is a hack because ACE's authenticate() often sends the response directly.
+const wrapAuth = (req, res, next) => {
+    addon.authenticate()(req, res, (err) => {
+        if (err) {
+            console.error('Auth Error:', err);
+            return res.status(401).json({ success: false, error: 'Authentication failed: ' + (err.message || 'Unknown error') });
+        }
+        next();
+    });
+};
 
 // 🔐 Jira Issue Panel
 app.get('/render-refiner', addon.authenticate(), (req, res) => {
@@ -32,7 +41,8 @@ app.get('/render-refiner', addon.authenticate(), (req, res) => {
 });
 
 // 🔐 Gemini enhancement
-app.post('/enhance-description', addon.authenticate(), async (req, res) => {
+// We use a custom wrapper to return JSON errors instead of plain text
+app.post('/enhance-description', wrapAuth, async (req, res) => {
     const { currentDescription } = req.body;
     const apiKey = process.env.GEMINI_API_KEY;
 
@@ -63,12 +73,13 @@ app.post('/enhance-description', addon.authenticate(), async (req, res) => {
 
         res.json({ success: true, enhancedDescription: enhanced.trim() });
     } catch (e) {
+        console.error('Gemini error:', e);
         res.status(500).json({ success: false, error: e.message });
     }
 });
 
 // 🔐 Update Jira description
-app.put('/update-description', addon.authenticate(), (req, res) => {
+app.put('/update-description', wrapAuth, (req, res) => {
     const { issueKey, newDescription } = req.body;
     const httpClient = addon.httpClient(req);
 
@@ -92,6 +103,7 @@ app.put('/update-description', addon.authenticate(), (req, res) => {
         }
     }, (err, response, body) => {
         if (err || response.statusCode >= 400) {
+            console.error('Jira update error:', err || body);
             return res.status(500).json({ success: false, error: body });
         }
         res.json({ success: true });

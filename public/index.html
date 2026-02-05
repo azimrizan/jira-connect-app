@@ -90,7 +90,14 @@
                                 'Content-Type': 'application/json'
                             }
                         });
-                        resolve(res);
+
+                        if (!res.ok) {
+                            const text = await res.text();
+                            throw new Error(`Server Error (${res.status}): ${text}`);
+                        }
+
+                        const data = await res.json();
+                        resolve(data);
                     } catch (e) {
                         reject(e);
                     }
@@ -122,13 +129,10 @@
             refineBtn.innerText = 'Refining…';
 
             try {
-                const res = await authenticatedFetch('/enhance-description', {
+                const data = await authenticatedFetch('/enhance-description', {
                     method: 'POST',
                     body: JSON.stringify({ currentDescription: currentDesc })
                 });
-
-                const data = await res.json();
-                if (!data.success) throw new Error(data.error);
 
                 enhanced = data.enhancedDescription;
                 document.getElementById('result').innerText = enhanced;
@@ -147,18 +151,15 @@
             applyBtn.innerText = 'Applying…';
 
             try {
-                const res = await authenticatedFetch('/update-description', {
+                const data = await authenticatedFetch('/update-description', {
                     method: 'PUT',
                     body: JSON.stringify({ issueKey, newDescription: enhanced })
                 });
 
-                const data = await res.json();
-                if (!data.success) throw new Error(data.error);
-
                 closeModal();
                 AP.jira.refreshIssuePage();
             } catch (e) {
-                alert('Failed to update: ' + e.message);
+                alert(e.message);
             } finally {
                 applyBtn.disabled = false;
                 applyBtn.innerText = 'Replace Description';
