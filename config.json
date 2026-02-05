@@ -7,19 +7,5 @@
       "dialect": "sqlite",
       "storage": "database.sqlite"
     }
-  },
-  "production": {
-    "port": 8080,
-    "store": {
-      "adapter": "sequelize",
-      "dialect": "postgres",
-      "url": "$DATABASE_URL",
-      "dialectOptions": {
-        "ssl": {
-          "require": true,
-          "rejectUnauthorized": false
-        }
-      }
-    }
   }
 }

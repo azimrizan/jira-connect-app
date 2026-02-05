@@ -1,3 +1,6 @@
+// FORCE DEV MODE (IMPORTANT)
+process.env.NODE_ENV = 'development';
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const ace = require('atlassian-connect-express');
@@ -12,12 +15,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(addon.middleware());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ✅ Local health check (NO auth)
+// ✅ Health check
 app.get('/', (req, res) => {
-  res.send('AAVA Jira Connect app running ✅');
+  res.send('AAVA Jira Connect app (DEV mode) running ✅');
 });
 
-// ✅ Required lifecycle endpoint
+// ✅ Required lifecycle
 app.post('/installed', (req, res) => {
   res.sendStatus(200);
 });
@@ -27,7 +30,7 @@ app.get('/render-refiner', addon.authenticate(), (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-// 🔐 Gemini AI enhancement
+// 🔐 Gemini enhancement
 app.post('/enhance-description', addon.authenticate(), async (req, res) => {
   const { currentDescription } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
@@ -72,7 +75,6 @@ app.post('/enhance-description', addon.authenticate(), async (req, res) => {
       enhancedDescription: enhanced.trim()
     });
   } catch (e) {
-    console.error(e);
     res.status(500).json({
       success: false,
       error: e.message
@@ -80,7 +82,7 @@ app.post('/enhance-description', addon.authenticate(), async (req, res) => {
   }
 });
 
-// 🔐 Update Jira issue description
+// 🔐 Update Jira description
 app.put('/update-description', addon.authenticate(), (req, res) => {
   const { issueKey, newDescription } = req.body;
   const httpClient = addon.httpClient(req);
@@ -117,8 +119,8 @@ app.put('/update-description', addon.authenticate(), (req, res) => {
   );
 });
 
-// ✅ Render + local compatible port
+// ✅ Render-compatible port
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running (DEV mode) on port ${PORT}`);
 });
