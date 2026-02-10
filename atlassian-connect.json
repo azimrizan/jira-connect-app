@@ -25,14 +25,24 @@
         "WRITE"
     ],
     "modules": {
-        "webPanels": [
+        "jiraIssueContents": [
             {
                 "key": "aava-refiner-panel",
-                "location": "atl.jira.view.issue.right.context",
                 "name": {
                     "value": "Refine with AAVA"
                 },
-                "url": "/render-refiner?issueKey={issue.key}"
+                "icon": {
+                    "width": 24,
+                    "height": 24,
+                    "url": "/icon.svg"
+                },
+                "target": {
+                    "type": "web_panel",
+                    "url": "/render-refiner?issueKey={issue.key}"
+                },
+                "tooltip": {
+                    "value": "Refine issue description with Gemini AI"
+                }
             }
         ]
     }
