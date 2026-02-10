@@ -1,6 +1,6 @@
 {
     "apiVersion": 1,
-    "key": "aava-refiner-left-v2",
+    "key": "aava-refiner-final",
     "name": "AAVA Description Refiner",
     "description": "Refine Jira issue descriptions using Gemini AI",
     "vendor": {
@@ -25,15 +25,19 @@
         "WRITE"
     ],
     "modules": {
-        "webPanels": [
+        "jiraIssueContents": [
             {
                 "key": "aava-refiner-panel",
-                "location": "jira.issue.content",
                 "name": {
                     "value": "Refine with AAVA"
                 },
                 "url": "/render-refiner?issueKey={issue.key}",
-                "weight": 10
+                "target": {
+                    "type": "web_panel"
+                },
+                "tooltip": {
+                    "value": "Refine issue description with Gemini AI"
+                }
             }
         ]
     }
