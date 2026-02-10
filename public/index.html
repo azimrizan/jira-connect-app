@@ -105,6 +105,10 @@
     </div>
 
     <script>
+        // HIDE DEFAULT JIRA DIALOG BUTTONS IMMEDIATELY
+        AP.dialog.getButton('submit').hide();
+        AP.dialog.getButton('cancel').hide();
+
         let issueKey = '';
         let currentDesc = '';
         let enhanced = '';
