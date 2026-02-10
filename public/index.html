@@ -80,15 +80,6 @@
             background: #0065ff;
         }
 
-        #cancelBtn {
-            background: rgba(9, 30, 66, 0.08);
-            color: #42526E;
-        }
-
-        #cancelBtn:hover {
-            background: rgba(9, 30, 66, 0.13);
-        }
-
         .error {
             color: #de350b;
             font-weight: bold;
@@ -109,8 +100,7 @@
         <pre id="result"></pre>
 
         <div class="footer">
-            <button id="cancelBtn">Cancel</button>
-            <button id="applyBtn">Replace Description</button>
+            <button id="applyBtn">Replace description</button>
         </div>
     </div>
 
@@ -118,10 +108,6 @@
         let issueKey = '';
         let currentDesc = '';
         let enhanced = '';
-
-        // 1. Get query param or Context
-        // Since we pass issueKey in the URL query param for the dialog module, getting it from context is safest.
-        // Or AP.context.getContext(). But let's try URL param first if passed.
 
         // Helper to fetch with JWT (Skip QSH handled by backend, but we need token)
         async function authenticatedFetch(url, options = {}) {
@@ -203,10 +189,6 @@
             }
         }
 
-        document.getElementById('cancelBtn').onclick = () => {
-            AP.dialog.close();
-        };
-
         document.getElementById('applyBtn').onclick = async () => {
             const btn = document.getElementById('applyBtn');
             btn.disabled = true;
@@ -223,7 +205,7 @@
             } catch (e) {
                 alert("Failed to update: " + e.message);
                 btn.disabled = false;
-                btn.innerText = 'Replace Description';
+                btn.innerText = 'Replace description';
             }
         };
     </script>

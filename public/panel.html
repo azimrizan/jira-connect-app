@@ -19,6 +19,7 @@
             cursor: pointer;
             border-radius: 3px;
             font-weight: 500;
+            width: 100%;
         }
 
         button:hover {
@@ -33,12 +34,10 @@
 
     <script>
         document.getElementById('openBtn').onclick = () => {
-            // Open the dialog directly
+            // Open the dialog directly with larger size
             AP.dialog.create({
                 key: 'aava-refiner-dialog',
-                background: "blank",
-                width: "600px",
-                height: "400px",
+                size: "large", // Use standard Jira 'large' size
                 chrome: true,
                 header: {
                     value: "Refine with AAVA"
