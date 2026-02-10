@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Refine with AAVA</title>
     <script src="https://connect-cdn.atl-paas.net/all.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -43,17 +44,30 @@
             display: none;
         }
 
-        pre {
+        /* Rendered Markdown Styling */
+        #result {
             background: #f4f5f7;
             padding: 15px;
-            white-space: pre-wrap;
             max-height: 400px;
             overflow-y: auto;
             border-radius: 3px;
             border: 1px solid #dfe1e6;
-            font-family: monospace;
             font-size: 14px;
             line-height: 1.5;
+        }
+
+        #result h1,
+        #result h2,
+        #result h3 {
+            font-size: 16px;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        #result ul {
+            margin-top: 5px;
+            padding-left: 20px;
         }
 
         .footer {
@@ -71,6 +85,7 @@
             border: none;
         }
 
+        /* Primary button style */
         #applyBtn {
             background: #0052cc;
             color: white;
@@ -78,6 +93,16 @@
 
         #applyBtn:hover {
             background: #0065ff;
+        }
+
+        /* Secondary/Cancel button style */
+        #cancelBtn {
+            background: rgba(9, 30, 66, 0.08);
+            color: #42526E;
+        }
+
+        #cancelBtn:hover {
+            background: rgba(9, 30, 66, 0.13);
         }
 
         .error {
@@ -96,10 +121,11 @@
     </div>
 
     <div id="content">
-        <h3>Enhanced Description</h3>
-        <pre id="result"></pre>
+        <!-- Use div for rendered HTML -->
+        <div id="result"></div>
 
         <div class="footer">
+            <button id="cancelBtn">Cancel</button>
             <button id="applyBtn">Replace description</button>
         </div>
     </div>
@@ -111,7 +137,7 @@
 
         let issueKey = '';
         let currentDesc = '';
-        let enhanced = '';
+        let enhancedRaw = '';
 
         // Helper to fetch with JWT (Skip QSH handled by backend, but we need token)
         async function authenticatedFetch(url, options = {}) {
@@ -172,8 +198,10 @@
                                 body: JSON.stringify({ currentDescription: currentDesc })
                             });
 
-                            enhanced = data.enhancedDescription;
-                            document.getElementById('result').innerText = enhanced;
+                            enhancedRaw = data.enhancedDescription;
+                            // Use marked to render the markdown
+                            document.getElementById('result').innerHTML = marked.parse(enhancedRaw);
+
                             document.getElementById('loading').style.display = 'none';
                             document.getElementById('content').style.display = 'block';
 
@@ -193,6 +221,10 @@
             }
         }
 
+        document.getElementById('cancelBtn').onclick = () => {
+            AP.dialog.close();
+        };
+
         document.getElementById('applyBtn').onclick = async () => {
             const btn = document.getElementById('applyBtn');
             btn.disabled = true;
@@ -201,7 +233,13 @@
             try {
                 await authenticatedFetch('/update-description', {
                     method: 'PUT',
-                    body: JSON.stringify({ issueKey, newDescription: enhanced })
+                    // Send raw text if you want markdown in Jira, or HTML?
+                    // Jira API v3 ("doc" format) usually takes structured JSON.
+                    // Wait, app.js logic converts simple text to a paragraph node.
+                    // We actually want to send the raw markdown text so Jira renders it?
+                    // Or if the backend returns markdown, we should probably strip it or convert to ADF.
+                    // For now, let's just send the raw text from Gemini, which is markdown-ish.
+                    body: JSON.stringify({ issueKey, newDescription: enhancedRaw })
                 });
 
                 AP.jira.refreshIssuePage();
