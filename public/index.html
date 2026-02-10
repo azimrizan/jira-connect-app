@@ -3,69 +3,114 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>AAVA Refiner</title>
+    <title>Refine with AAVA</title>
     <script src="https://connect-cdn.atl-paas.net/all.js"></script>
-
     <style>
         body {
-            font-family: Arial, sans-serif;
-            padding: 10px;
-        }
-
-        button {
-            background: #0052cc;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            cursor: pointer;
-            border-radius: 3px;
-        }
-
-        button:disabled {
-            background: #ccc;
-        }
-
-        #overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-        }
-
-        #modal {
-            background: white;
-            width: 80%;
-            max-width: 600px;
-            margin: 80px auto;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             padding: 20px;
-            border-radius: 4px;
-            position: relative;
+        }
+
+        #loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0052cc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #content {
+            display: none;
         }
 
         pre {
             background: #f4f5f7;
-            padding: 10px;
+            padding: 15px;
             white-space: pre-wrap;
             max-height: 400px;
             overflow-y: auto;
+            border-radius: 3px;
+            border: 1px solid #dfe1e6;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: 500;
+            border: none;
+        }
+
+        #applyBtn {
+            background: #0052cc;
+            color: white;
+        }
+
+        #applyBtn:hover {
+            background: #0065ff;
+        }
+
+        #cancelBtn {
+            background: rgba(9, 30, 66, 0.08);
+            color: #42526E;
+        }
+
+        #cancelBtn:hover {
+            background: rgba(9, 30, 66, 0.13);
+        }
+
+        .error {
+            color: #de350b;
+            font-weight: bold;
+            text-align: center;
         }
     </style>
 </head>
 
 <body>
 
-    <button id="refineBtn" disabled>Refine with AAVA</button>
-    <span id="status" style="margin-left:10px;color:#666;">Loading…</span>
+    <div id="loading">
+        <div class="spinner"></div>
+        <p>Generating enhanced description...</p>
+    </div>
 
-    <div id="overlay">
-        <div id="modal">
-            <h3>Enhanced Description</h3>
-            <pre id="result"></pre>
-            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
-                <button id="applyBtn">Replace Description</button>
-                <button onclick="closeModal()" style="background:#ebecf0;color:#42526e;">Cancel</button>
-            </div>
+    <div id="content">
+        <h3>Enhanced Description</h3>
+        <pre id="result"></pre>
+
+        <div class="footer">
+            <button id="cancelBtn">Cancel</button>
+            <button id="applyBtn">Replace Description</button>
         </div>
     </div>
 
@@ -74,10 +119,11 @@
         let currentDesc = '';
         let enhanced = '';
 
-        const refineBtn = document.getElementById('refineBtn');
-        const statusSpan = document.getElementById('status');
+        // 1. Get query param or Context
+        // Since we pass issueKey in the URL query param for the dialog module, getting it from context is safest.
+        // Or AP.context.getContext(). But let's try URL param first if passed.
 
-        // Helper to fetch with JWT
+        // Helper to fetch with JWT (Skip QSH handled by backend, but we need token)
         async function authenticatedFetch(url, options = {}) {
             return new Promise((resolve, reject) => {
                 AP.context.getToken(async (token) => {
@@ -93,7 +139,12 @@
 
                         if (!res.ok) {
                             const text = await res.text();
-                            throw new Error(`Server Error (${res.status}): ${text}`);
+                            try {
+                                const json = JSON.parse(text);
+                                throw new Error(json.error || `Server Error (${res.status})`);
+                            } catch (e) {
+                                throw new Error(`Server Error (${res.status}): ${text}`);
+                            }
                         }
 
                         const data = await res.json();
@@ -105,70 +156,76 @@
             });
         }
 
+        function showError(msg) {
+            document.getElementById('loading').innerHTML = `<p class="error">${msg}</p>`;
+        }
+
+        // Start logic immediately
         AP.context.getContext(ctx => {
             issueKey = ctx.jira.issue.key;
-
-            AP.request({
-                url: `/rest/api/3/issue/${issueKey}?expand=renderedFields`,
-                success: res => {
-                    const data = JSON.parse(res);
-                    currentDesc =
-                        data.renderedFields?.description?.replace(/<[^>]+>/g, '') || '';
-
-                    refineBtn.disabled = false;
-                    statusSpan.innerText = '';
-                },
-                error: () => {
-                    statusSpan.innerText = 'Failed to load description';
-                }
-            });
+            startRefinement();
         });
 
-        refineBtn.onclick = async () => {
-            refineBtn.disabled = true;
-            refineBtn.innerText = 'Refining…';
-
+        async function startRefinement() {
             try {
-                const data = await authenticatedFetch('/enhance-description', {
-                    method: 'POST',
-                    body: JSON.stringify({ currentDescription: currentDesc })
-                });
+                // 1. Get Description
+                AP.request({
+                    url: `/rest/api/3/issue/${issueKey}?expand=renderedFields`,
+                    success: async (res) => {
+                        const data = JSON.parse(res);
+                        currentDesc = data.renderedFields?.description?.replace(/<[^>]+>/g, '') || '';
 
-                enhanced = data.enhancedDescription;
-                document.getElementById('result').innerText = enhanced;
-                document.getElementById('overlay').style.display = 'block';
+                        // 2. Enhance via Backend
+                        try {
+                            const data = await authenticatedFetch('/enhance-description', {
+                                method: 'POST',
+                                body: JSON.stringify({ currentDescription: currentDesc })
+                            });
+
+                            enhanced = data.enhancedDescription;
+                            document.getElementById('result').innerText = enhanced;
+                            document.getElementById('loading').style.display = 'none';
+                            document.getElementById('content').style.display = 'block';
+
+                            // Resize dialog to fit content if possible
+                            AP.resize('100%', '100%');
+
+                        } catch (e) {
+                            showError("Refinement Failed: " + e.message);
+                        }
+                    },
+                    error: () => {
+                        showError("Failed to load issue description.");
+                    }
+                });
             } catch (e) {
-                alert(e.message);
-            } finally {
-                refineBtn.disabled = false;
-                refineBtn.innerText = 'Refine with AAVA';
+                showError(e.message);
             }
+        }
+
+        document.getElementById('cancelBtn').onclick = () => {
+            AP.dialog.close();
         };
 
         document.getElementById('applyBtn').onclick = async () => {
-            const applyBtn = document.getElementById('applyBtn');
-            applyBtn.disabled = true;
-            applyBtn.innerText = 'Applying…';
+            const btn = document.getElementById('applyBtn');
+            btn.disabled = true;
+            btn.innerText = 'Applying...';
 
             try {
-                const data = await authenticatedFetch('/update-description', {
+                await authenticatedFetch('/update-description', {
                     method: 'PUT',
                     body: JSON.stringify({ issueKey, newDescription: enhanced })
                 });
 
-                closeModal();
                 AP.jira.refreshIssuePage();
+                AP.dialog.close();
             } catch (e) {
-                alert(e.message);
-            } finally {
-                applyBtn.disabled = false;
-                applyBtn.innerText = 'Replace Description';
+                alert("Failed to update: " + e.message);
+                btn.disabled = false;
+                btn.innerText = 'Replace Description';
             }
         };
-
-        function closeModal() {
-            document.getElementById('overlay').style.display = 'none';
-        }
     </script>
 
 </body>

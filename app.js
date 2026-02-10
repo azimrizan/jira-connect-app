@@ -42,7 +42,12 @@ const authenticateSkipQsh = (req, res, next) => {
     });
 };
 
-// 🔐 Jira Issue Panel (This is a page load, so standard auth is usually fine)
+// 🔐 Jira Issue Panel (Button)
+app.get('/render-panel', addon.authenticate(), (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/panel.html'));
+});
+
+// 🔐 Refiner Dialog (Modal Content)
 app.get('/render-refiner', addon.authenticate(), (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'));
 });

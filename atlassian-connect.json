@@ -25,6 +25,19 @@
         "WRITE"
     ],
     "modules": {
+        "dialogs": [
+            {
+                "key": "aava-refiner-dialog",
+                "url": "/render-refiner?issueKey={issue.key}",
+                "options": {
+                    "chrome": false,
+                    "header": {
+                        "value": "Refine with AAVA"
+                    },
+                    "size": "x-large"
+                }
+            }
+        ],
         "jiraIssueContents": [
             {
                 "key": "aava-refiner-panel",
@@ -38,7 +51,7 @@
                 },
                 "target": {
                     "type": "web_panel",
-                    "url": "/render-refiner?issueKey={issue.key}"
+                    "url": "/render-panel?issueKey={issue.key}"
                 },
                 "tooltip": {
                     "value": "Refine issue description with Gemini AI"
