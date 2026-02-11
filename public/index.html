@@ -4,187 +4,187 @@
 <head>
     <meta charset="UTF-8">
     <title>Enhanced Description</title>
-    <parameter name="script">src="https://connect-cdn.atl-paas.net/all.js"></script>
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
+    <script src="https://connect-cdn.atl-paas.net/all.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 14px;
+            color: #172B4D;
+            overflow: hidden;
+        }
+
+        .dialog-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 10px;
+        }
+
+        .content-box {
+            flex: 1;
+            border: 1px solid #dfe1e6;
+            border-radius: 3px;
+            padding: 16px;
+            overflow-y: auto;
+            background: #fff;
+            line-height: 1.6;
+        }
+
+        .content-box h2 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 16px;
+            margin-bottom: 8px;
+            color: #0052cc;
+        }
+
+        .content-box h2:first-child {
+            margin-top: 0;
+        }
+
+        .content-box h3 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 12px;
+            margin-bottom: 4px;
+        }
+
+        .content-box p {
+            margin-bottom: 8px;
+        }
+
+        .content-box ul,
+        .content-box ol {
+            padding-left: 24px;
+            margin-bottom: 8px;
+        }
+
+        .content-box li {
+            margin-bottom: 4px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .badge-critical {
+            background: #FFEBE6;
+            color: #DE350B;
+        }
+
+        .badge-high {
+            background: #FFF0B3;
+            color: #FF8B00;
+        }
+
+        .badge-medium {
+            background: #DEEBFF;
+            color: #0052CC;
+        }
+
+        .badge-low {
+            background: #E3FCEF;
+            color: #006644;
+        }
+
+        .badge-bug {
+            background: #FFEBE6;
+            color: #DE350B;
+        }
+
+        .badge-story {
+            background: #E3FCEF;
+            color: #006644;
+        }
+
+        .badge-task {
+            background: #DEEBFF;
+            color: #0052CC;
+        }
+
+        .dialog-footer {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            padding-top: 16px;
+            flex-shrink: 0;
+        }
+
+        button {
+            padding: 6px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            border: none;
+        }
+
+        #applyBtn {
+            background: #0052cc;
+            color: white;
+        }
+
+        #applyBtn:hover {
+            background: #0065ff;
+        }
+
+        #cancelBtn {
+            background: none;
+            color: #42526E;
+        }
+
+        #cancelBtn:hover {
+            text-decoration: underline;
+        }
+
+        #loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0052cc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
             }
 
-            html,
-            body {
-                height: 100%;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-                font-size: 14px;
-                color: #172B4D;
-                overflow: hidden;
+            100% {
+                transform: rotate(360deg);
             }
+        }
 
-            .dialog-wrapper {
-                display: flex;
-                flex-direction: column;
-                height: 100vh;
-                padding: 10px;
-            }
-
-            .content-box {
-                flex: 1;
-                border: 1px solid #dfe1e6;
-                border-radius: 3px;
-                padding: 16px;
-                overflow-y: auto;
-                background: #fff;
-                line-height: 1.6;
-            }
-
-            .content-box h2 {
-                font-size: 16px;
-                font-weight: 700;
-                margin-top: 16px;
-                margin-bottom: 8px;
-                color: #0052cc;
-            }
-
-            .content-box h2:first-child {
-                margin-top: 0;
-            }
-
-            .content-box h3 {
-                font-size: 14px;
-                font-weight: 700;
-                margin-top: 12px;
-                margin-bottom: 4px;
-            }
-
-            .content-box p {
-                margin-bottom: 8px;
-            }
-
-            .content-box ul,
-            .content-box ol {
-                padding-left: 24px;
-                margin-bottom: 8px;
-            }
-
-            .content-box li {
-                margin-bottom: 4px;
-            }
-
-            .badge {
-                display: inline-block;
-                padding: 2px 8px;
-                border-radius: 3px;
-                font-size: 12px;
-                font-weight: 600;
-                margin-right: 8px;
-            }
-
-            .badge-critical {
-                background: #FFEBE6;
-                color: #DE350B;
-            }
-
-            .badge-high {
-                background: #FFF0B3;
-                color: #FF8B00;
-            }
-
-            .badge-medium {
-                background: #DEEBFF;
-                color: #0052CC;
-            }
-
-            .badge-low {
-                background: #E3FCEF;
-                color: #006644;
-            }
-
-            .badge-bug {
-                background: #FFEBE6;
-                color: #DE350B;
-            }
-
-            .badge-story {
-                background: #E3FCEF;
-                color: #006644;
-            }
-
-            .badge-task {
-                background: #DEEBFF;
-                color: #0052CC;
-            }
-
-            .dialog-footer {
-                display: flex;
-                justify-content: flex-end;
-                align-items: center;
-                gap: 8px;
-                padding-top: 16px;
-                flex-shrink: 0;
-            }
-
-            button {
-                padding: 6px 12px;
-                border-radius: 3px;
-                cursor: pointer;
-                font-weight: 500;
-                font-size: 14px;
-                border: none;
-            }
-
-            #applyBtn {
-                background: #0052cc;
-                color: white;
-            }
-
-            #applyBtn:hover {
-                background: #0065ff;
-            }
-
-            #cancelBtn {
-                background: none;
-                color: #42526E;
-            }
-
-            #cancelBtn:hover {
-                text-decoration: underline;
-            }
-
-            #loading {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                flex: 1;
-            }
-
-            .spinner {
-                width: 36px;
-                height: 36px;
-                border: 3px solid #f3f3f3;
-                border-top: 3px solid #0052cc;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin-bottom: 12px;
-            }
-
-            @keyframes spin {
-                0% {
-                    transform: rotate(0deg);
-                }
-
-                100% {
-                    transform: rotate(360deg);
-                }
-            }
-
-            .error {
-                color: #de350b;
-                font-weight: bold;
-                text-align: center;
-            }
-        </style>
+        .error {
+            color: #de350b;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
 </head>
 
 <body>
