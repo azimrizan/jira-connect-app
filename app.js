@@ -71,28 +71,57 @@ app.post('/enhance-description', authenticateSkipQsh, async (req, res) => {
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: `You are a professional Jira issue enhancer. Convert the following vague issue description into a comprehensive, structured JSON format.
-
-Original Description: "${currentDescription}"
-
-Return ONLY valid JSON (no markdown, no code blocks) with these fields:
-{
-  "Executive Summary": {"Overview": "...", "Key Outcomes": ["..."]},
-  "Enhanced Jira Description": {"Title": "...", "Background": "...", "Impact Analysis": "...", "Additional Notes": ["..."]},
-  "Steps to Reproduce": ["..."],
-  "Actual Result": "...",
-  "Expected Result": "...",
-  "Acceptance Criteria": ["GIVEN...WHEN...THEN..."],
-  "Issue Type": "Bug|Story|Task",
-  "Priority": "Critical|High|Medium|Low",
-  "Validation Report": {"QA Results": "...", "Improvement Suggestions": "...", "Compliance Checks": "..."},
-  "Troubleshooting Guide": {"Common Issues": ["..."], "Solutions": ["..."]},
-  "Recommendations": ["..."]
-}
-
-Return ONLY the JSON object, no other text.`
+                            text: `You are a professional Jira issue enhancer. Analyze this issue description and return a comprehensive JSON structure.\n\nOriginal: "${currentDescription}"\n\nProvide detailed, professional content for each field. Be thorough and actionable.`
                         }]
-                    }]
+                    }],
+                    generationConfig: {
+                        temperature: 0.7,
+                        response_mime_type: "application/json",
+                        response_schema: {
+                            type: "object",
+                            properties: {
+                                "Executive Summary": {
+                                    type: "object",
+                                    properties: {
+                                        Overview: { type: "string" },
+                                        "Key Outcomes": { type: "array", items: { type: "string" } }
+                                    }
+                                },
+                                "Enhanced Jira Description": {
+                                    type: "object",
+                                    properties: {
+                                        Title: { type: "string" },
+                                        Background: { type: "string" },
+                                        "Impact Analysis": { type: "string" },
+                                        "Additional Notes": { type: "array", items: { type: "string" } }
+                                    }
+                                },
+                                "Steps to Reproduce": { type: "array", items: { type: "string" } },
+                                "Actual Result": { type: "string" },
+                                "Expected Result": { type: "string" },
+                                "Acceptance Criteria": { type: "array", items: { type: "string" } },
+                                "Issue Type": { type: "string" },
+                                Priority: { type: "string" },
+                                "Validation Report": {
+                                    type: "object",
+                                    properties: {
+                                        "QA Results": { type: "string" },
+                                        "Improvement Suggestions": { type: "string" },
+                                        "Compliance Checks": { type: "string" }
+                                    }
+                                },
+                                "Troubleshooting Guide": {
+                                    type: "object",
+                                    properties: {
+                                        "Common Issues": { type: "array", items: { type: "string" } },
+                                        Solutions: { type: "array", items: { type: "string" } }
+                                    }
+                                },
+                                Recommendations: { type: "array", items: { type: "string" } }
+                            },
+                            required: ["Executive Summary", "Enhanced Jira Description", "Steps to Reproduce", "Actual Result", "Expected Result", "Acceptance Criteria", "Issue Type", "Priority"]
+                        }
+                    }
                 })
             }
         );
@@ -102,7 +131,8 @@ Return ONLY the JSON object, no other text.`
 
         if (!enhanced) throw new Error('Invalid Gemini response');
 
-        // Clean and parse JSON response
+        // With response_mime_type, Gemini should return pure JSON
+        // But let's still clean it just in case
         let cleanedText = enhanced.trim();
         if (cleanedText.startsWith('```json')) {
             cleanedText = cleanedText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
@@ -110,8 +140,10 @@ Return ONLY the JSON object, no other text.`
             cleanedText = cleanedText.replace(/```\s*/g, '');
         }
 
-        // Validate it's valid JSON
+        // Parse and validate JSON
         const jsonResult = JSON.parse(cleanedText);
+
+        console.log('✅ Gemini returned valid JSON:', Object.keys(jsonResult));
 
         res.json({ success: true, enhancedDescription: JSON.stringify(jsonResult, null, 2) });
     } catch (e) {
