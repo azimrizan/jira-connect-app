@@ -34,8 +34,12 @@
             border-radius: 3px;
             padding: 16px;
             overflow-y: auto;
-            background: #fff;
+            background: #f4f5f7;
             line-height: 1.6;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         .content-box h2 {
@@ -368,9 +372,9 @@
 
                         enhancedRaw = result.enhancedDescription;
 
-                        // Parse JSON and render it
+                        // Display the raw JSON in a readable format
                         const jsonData = JSON.parse(enhancedRaw);
-                        document.getElementById('result').innerHTML = renderJSON(jsonData);
+                        document.getElementById('result').textContent = JSON.stringify(jsonData, null, 2);
 
                         document.getElementById('loading').style.display = 'none';
                         var contentEl = document.getElementById('content');
