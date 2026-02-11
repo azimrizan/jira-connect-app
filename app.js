@@ -71,76 +71,28 @@ app.post('/enhance-description', authenticateSkipQsh, async (req, res) => {
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: `You are a professional Jira issue enhancer. Transform this vague description into a comprehensive bug report.
+                            text: `You are a professional Jira issue enhancer. Transform the vague description below into a comprehensive, enterprise-grade bug report.
 
-Original: "${currentDescription}"
+Original Description: "${currentDescription}"
 
-Return ONLY this exact JSON structure with detailed, professional content:
+IMPORTANT GUIDELINES:
+1. Executive Summary Overview: Write a detailed paragraph explaining how you transformed the vague description into a comprehensive report. Mention what was unclear and how you clarified it.
+2. Key Outcomes: List 3-4 specific achievements (e.g., "Transformed a vague report into...", "Established clear, testable Acceptance Criteria...")
+3. Enhanced Description Title: ALWAYS start with "Bug:" followed by a specific, technical description
+4. Background: Provide detailed context about the feature, its purpose, and current state. Be narrative and thorough (3-5 sentences).
+5. Impact Analysis: Explain business impact in detail - mention service outage, SLAs, user trust, productivity. Use phrases like "critical-level incident", "complete service outage". (3-5 sentences)
+6. Additional Notes: Provide 3 actionable investigation steps (e.g., "Initial investigation should focus on...", "It is recommended to check...")
+7. Steps to Reproduce: Number them as "1. Navigate to...", "2. Enter...", etc.
+8. Actual Result: Describe what happens now in detail (2-3 sentences)
+9. Expected Result: Describe desired behavior with specifics like timing ("within 3-5 seconds")
+10. Acceptance Criteria: Use Gherkin format "GIVEN...WHEN...THEN" for each criterion (4-5 criteria)
+11. Priority: Use "Critical", "High", "Medium", or "Low" ONLY
+12. Validation Report: Write detailed paragraphs for QA Results, Improvement Suggestions, Compliance Checks
+13. Troubleshooting Guide Common Issues: List 4-5 general reporting problems ("Ambiguous Titles...", "Missing Steps...")
+14. Troubleshooting Guide Solutions: List 4-5 general solutions ("Standardize Titles...", "Enforce Required Fields...")
+15. Recommendations: Provide 4 process improvement recommendations
 
-{
-  "Executive Summary": {
-    "Overview": "[Write 3-5 sentences explaining how you transformed the vague description into a comprehensive report, what was unclear, and how you clarified it. Start with 'The original issue description...' and explain the transformation.]",
-    "Key Outcomes": [
-      "Transformed a vague report into a detailed, actionable bug ticket.",
-      "Established clear, testable Acceptance Criteria for QA validation.",
-      "Assigned an appropriate Issue Type (Bug) and Priority (Critical) to reflect business impact.",
-      "Provided a full-fledged report including validation, troubleshooting, and recommendations for future improvements."
-    ]
-  },
-  "Enhanced Jira Description": {
-    "Title": "Bug: [Specific technical title]",
-    "Background": "[3-5 sentences: What is this feature? What is its purpose? What is the current state? Be detailed and narrative.]",
-    "Impact Analysis": "[3-5 sentences: Explain this is a critical-level incident, complete service outage, mentions SLAs, user trust, productivity impact. Use business language.]",
-    "Additional Notes": [
-      "Initial investigation should focus on [specific component/area].",
-      "It is recommended to check [specific log/tool] for [specific errors].",
-      "The report is missing [specific details]. The development team should [action]."
-    ]
-  },
-  "Steps to Reproduce": [
-    "1. Navigate to [specific page/URL].",
-    "2. Enter [specific input] into [specific field].",
-    "3. Enter [specific input] into [specific field].",
-    "4. Click the '[button name]' button."
-  ],
-  "Actual Result": "[2-3 sentences: What happens currently when performing the steps? Be specific about lack of response, no errors shown, user remains on page, etc.]",
-  "Expected Result": "[2-3 sentences: What should happen? Include specifics like 'within 3-5 seconds', specific redirects, etc.]",
-  "Acceptance Criteria": [
-    "GIVEN a user is on [page] with [condition], WHEN they [action], THEN they [expected outcome].",
-    "GIVEN [condition], THEN [expected outcome].",
-    "GIVEN a user [action with invalid data], WHEN they [action], THEN [error message should display].",
-    "GIVEN a user [action], THEN the [UI element] provides [specific feedback]."
-  ],
-  "Issue Type": "Bug",
-  "Priority": "Critical",
-  "Validation Report": {
-    "QA Results": "[2-3 sentences: Assessment of description completeness, whether it passes 'Ready for Development', what components it contains.]",
-    "Improvement Suggestions": "[2-3 sentences: Recommendations for reporters - include environment details, console logs, screen recordings, bug-reporting tools, Jira templates.]",
-    "Compliance Checks": "[1-2 sentences: Whether ticket structure complies with organizational standards, mentions specific components like title, background, steps, acceptance criteria.]"
-  },
-  "Troubleshooting Guide": {
-    "Common Issues": [
-      "Ambiguous Titles: Titles like 'It's broken' lack context.",
-      "Missing Steps to Reproduce: Without clear steps, developers and QA cannot verify the issue.",
-      "Unclear Outcomes: Vague descriptions of 'not working' prevent effective debugging and testing.",
-      "Lack of Impact Analysis: Issues without a clear business impact are often deprioritized incorrectly."
-    ],
-    "Solutions": [
-      "Standardize Titles: Use a 'Type: Feature/Component - Brief Description' format (e.g., 'Bug: Login Page - Button Unresponsive').",
-      "Enforce Required Fields: Make 'Steps to Reproduce', 'Actual Result', and 'Expected Result' mandatory fields in Jira.",
-      "Define Acceptance Criteria: Use the Gherkin (Given/When/Then) syntax to define specific, testable outcomes.",
-      "Quantify Impact: Explain the effect on users, business operations, or revenue to ensure proper prioritization."
-    ]
-  },
-  "Recommendations": [
-    "Implement standardized Jira issue templates for common issue types like Bugs and Stories to guide reporters in providing complete information.",
-    "Conduct brief, periodic training sessions for teams on what constitutes a high-quality Jira description.",
-    "Establish a 'Definition of Ready' for development teams, which requires tickets to meet specific quality criteria before being accepted into a sprint.",
-    "Promote a culture of clear communication where developers and QA are empowered to ask for clarification and push back on incomplete tickets."
-  ]
-}
-
-Follow this EXACT structure and field order. Make content specific to the original description.`
+Write in a professional, detailed, explanatory style. Be thorough and specific.`
                         }]
                     }],
                     generationConfig: {
