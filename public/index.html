@@ -250,7 +250,7 @@
 
             // Executive Summary
             if (data['Executive Summary']) {
-                html += '<h2>📋 Executive Summary</h2>';
+                html += '<h2>Executive Summary</h2>';
                 html += '<p><strong>Overview:</strong> ' + data['Executive Summary'].Overview + '</p>';
                 if (data['Executive Summary']['Key Outcomes']) {
                     html += '<p><strong>Key Outcomes:</strong></p><ul>';
@@ -263,7 +263,7 @@
 
             // Enhanced Jira Description
             if (data['Enhanced Jira Description']) {
-                html += '<h2>✨ Enhanced Jira Description</h2>';
+                html += '<h2>Enhanced Jira Description</h2>';
                 const desc = data['Enhanced Jira Description'];
                 if (desc.Title) html += '<p><strong>Title:</strong> ' + desc.Title + '</p>';
                 if (desc.Background) html += '<p><strong>Background:</strong> ' + desc.Background + '</p>';
@@ -277,29 +277,29 @@
 
             // Steps to Reproduce
             if (data['Steps to Reproduce'] && data['Steps to Reproduce'].length > 0) {
-                html += '<h2>🔄 Steps to Reproduce</h2><ol>';
+                html += '<h2>Steps to Reproduce</h2><ol>';
                 data['Steps to Reproduce'].forEach(step => html += '<li>' + step + '</li>');
                 html += '</ol>';
             }
 
             // Actual vs Expected
             if (data['Actual Result']) {
-                html += '<h3>❌ Actual Result</h3><p>' + data['Actual Result'] + '</p>';
+                html += '<h3>Actual Result</h3><p>' + data['Actual Result'] + '</p>';
             }
             if (data['Expected Result']) {
-                html += '<h3>✅ Expected Result</h3><p>' + data['Expected Result'] + '</p>';
+                html += '<h3>Expected Result</h3><p>' + data['Expected Result'] + '</p>';
             }
 
             // Acceptance Criteria
             if (data['Acceptance Criteria'] && data['Acceptance Criteria'].length > 0) {
-                html += '<h2>✔️ Acceptance Criteria</h2><ul>';
+                html += '<h2>Acceptance Criteria</h2><ul>';
                 data['Acceptance Criteria'].forEach(criteria => html += '<li>' + criteria + '</li>');
                 html += '</ul>';
             }
 
             // Issue Type & Priority
             if (data['Issue Type'] || data.Priority) {
-                html += '<h2>🏷️ Classification</h2><p>';
+                html += '<h2>Classification</h2><p>';
                 if (data['Issue Type']) {
                     const type = data['Issue Type'].toLowerCase();
                     html += '<span class="badge badge-' + type + '">' + data['Issue Type'] + '</span>';
@@ -313,7 +313,7 @@
 
             // Validation Report
             if (data['Validation Report']) {
-                html += '<h2>📊 Validation Report</h2>';
+                html += '<h2>Validation Report</h2>';
                 const val = data['Validation Report'];
                 if (val['QA Results']) html += '<p><strong>QA Results:</strong> ' + val['QA Results'] + '</p>';
                 if (val['Improvement Suggestions']) html += '<p><strong>Improvement Suggestions:</strong> ' + val['Improvement Suggestions'] + '</p>';
@@ -322,7 +322,7 @@
 
             // Troubleshooting Guide
             if (data['Troubleshooting Guide']) {
-                html += '<h2>🔧 Troubleshooting Guide</h2>';
+                html += '<h2>Troubleshooting Guide</h2>';
                 const guide = data['Troubleshooting Guide'];
                 if (guide['Common Issues'] && guide['Common Issues'].length > 0) {
                     html += '<h3>Common Issues</h3><ul>';
@@ -338,7 +338,7 @@
 
             // Recommendations
             if (data.Recommendations && data.Recommendations.length > 0) {
-                html += '<h2>💡 Recommendations</h2><ul>';
+                html += '<h2>Recommendations</h2><ul>';
                 data.Recommendations.forEach(rec => html += '<li>' + rec + '</li>');
                 html += '</ul>';
             }
