@@ -71,7 +71,28 @@ app.post('/enhance-description', authenticateSkipQsh, async (req, res) => {
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: `You are a professional Jira issue enhancer. Analyze this issue description and return a comprehensive JSON structure.\n\nOriginal: "${currentDescription}"\n\nProvide detailed, professional content for each field. Be thorough and actionable.`
+                            text: `You are a professional Jira issue enhancer. Transform the vague description below into a comprehensive, enterprise-grade bug report.
+
+Original Description: "${currentDescription}"
+
+IMPORTANT GUIDELINES:
+1. Executive Summary Overview: Write a detailed paragraph explaining how you transformed the vague description into a comprehensive report. Mention what was unclear and how you clarified it.
+2. Key Outcomes: List 3-4 specific achievements (e.g., "Transformed a vague report into...", "Established clear, testable Acceptance Criteria...")
+3. Enhanced Description Title: ALWAYS start with "Bug:" followed by a specific, technical description
+4. Background: Provide detailed context about the feature, its purpose, and current state. Be narrative and thorough (3-5 sentences).
+5. Impact Analysis: Explain business impact in detail - mention service outage, SLAs, user trust, productivity. Use phrases like "critical-level incident", "complete service outage". (3-5 sentences)
+6. Additional Notes: Provide 3 actionable investigation steps (e.g., "Initial investigation should focus on...", "It is recommended to check...")
+7. Steps to Reproduce: Number them as "1. Navigate to...", "2. Enter...", etc.
+8. Actual Result: Describe what happens now in detail (2-3 sentences)
+9. Expected Result: Describe desired behavior with specifics like timing ("within 3-5 seconds")
+10. Acceptance Criteria: Use Gherkin format "GIVEN...WHEN...THEN" for each criterion (4-5 criteria)
+11. Priority: Use "Critical", "High", "Medium", or "Low" ONLY
+12. Validation Report: Write detailed paragraphs for QA Results, Improvement Suggestions, Compliance Checks
+13. Troubleshooting Guide Common Issues: List 4-5 general reporting problems ("Ambiguous Titles...", "Missing Steps...")
+14. Troubleshooting Guide Solutions: List 4-5 general solutions ("Standardize Titles...", "Enforce Required Fields...")
+15. Recommendations: Provide 4 process improvement recommendations
+
+Write in a professional, detailed, explanatory style. Be thorough and specific.`
                         }]
                     }],
                     generationConfig: {
