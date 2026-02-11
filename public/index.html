@@ -34,12 +34,8 @@
             border-radius: 3px;
             padding: 16px;
             overflow-y: auto;
-            background: #f4f5f7;
+            background: #fff;
             line-height: 1.6;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 13px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
         }
 
         .content-box h2 {
@@ -372,9 +368,14 @@
 
                         enhancedRaw = result.enhancedDescription;
 
-                        // Display the raw JSON in a readable format
+                        // Parse JSON and render it as rich HTML
                         const jsonData = JSON.parse(enhancedRaw);
-                        document.getElementById('result').textContent = JSON.stringify(jsonData, null, 2);
+
+                        // LOG FOR DEMONSTRATION: Show the JSON structure in the console
+                        console.log('✅ STRUCTERED JSON DATA RECEIVED FROM SERVER:');
+                        console.log(jsonData);
+
+                        document.getElementById('result').innerHTML = renderJSON(jsonData);
 
                         document.getElementById('loading').style.display = 'none';
                         var contentEl = document.getElementById('content');
@@ -396,15 +397,91 @@
             AP.dialog.close();
         };
 
+        function formatToText(data) {
+            let text = '';
+
+            if (data['Executive Summary']) {
+                text += 'h2. Executive Summary\n\n';
+                text += '*Overview:* ' + data['Executive Summary'].Overview + '\n\n';
+                if (data['Executive Summary']['Key Outcomes']) {
+                    text += '*Key Outcomes:*\n';
+                    data['Executive Summary']['Key Outcomes'].forEach(o => text += '* ' + o + '\n');
+                    text += '\n';
+                }
+            }
+
+            if (data['Enhanced Jira Description']) {
+                text += 'h2. Enhanced Jira Description\n\n';
+                const d = data['Enhanced Jira Description'];
+                if (d.Title) text += '*Title:* ' + d.Title + '\n';
+                if (d.Background) text += '*Background:* ' + d.Background + '\n';
+                if (d['Impact Analysis']) text += '*Impact Analysis:* ' + d['Impact Analysis'] + '\n';
+                if (d['Additional Notes']) {
+                    text += '\n*Additional Notes:*\n';
+                    d['Additional Notes'].forEach(n => text += '* ' + n + '\n');
+                }
+                text += '\n';
+            }
+
+            if (data['Steps to Reproduce']) {
+                text += 'h2. Steps to Reproduce\n\n';
+                data['Steps to Reproduce'].forEach(s => text += '# ' + s + '\n');
+                text += '\n';
+            }
+
+            if (data['Actual Result']) text += 'h3. Actual Result\n' + data['Actual Result'] + '\n\n';
+            if (data['Expected Result']) text += 'h3. Expected Result\n' + data['Expected Result'] + '\n\n';
+
+            if (data['Acceptance Criteria']) {
+                text += 'h2. Acceptance Criteria\n\n';
+                data['Acceptance Criteria'].forEach(c => text += '* ' + c + '\n');
+                text += '\n';
+            }
+
+            if (data['Validation Report']) {
+                text += 'h2. Validation Report\n\n';
+                const v = data['Validation Report'];
+                if (v['QA Results']) text += '*QA Results:* ' + v['QA Results'] + '\n';
+                if (v['Improvement Suggestions']) text += '*Improvement Suggestions:* ' + v['Improvement Suggestions'] + '\n';
+                if (v['Compliance Checks']) text += '*Compliance Checks:* ' + v['Compliance Checks'] + '\n';
+                text += '\n';
+            }
+
+            if (data['Troubleshooting Guide']) {
+                text += 'h2. Troubleshooting Guide\n\n';
+                const g = data['Troubleshooting Guide'];
+                if (g['Common Issues']) {
+                    text += 'h3. Common Issues\n';
+                    g['Common Issues'].forEach(i => text += '* ' + i + '\n');
+                }
+                if (g.Solutions) {
+                    text += '\nh3. Solutions\n';
+                    g.Solutions.forEach(s => text += '* ' + s + '\n');
+                }
+                text += '\n';
+            }
+
+            if (data.Recommendations) {
+                text += 'h2. Recommendations\n\n';
+                data.Recommendations.forEach(r => text += '* ' + r + '\n');
+            }
+
+            return text;
+        }
+
         document.getElementById('applyBtn').onclick = async function () {
             var btn = document.getElementById('applyBtn');
             btn.disabled = true;
             btn.innerText = 'Applying...';
 
             try {
+                // Convert JSON to formatted text string for Jira
+                const jsonData = JSON.parse(enhancedRaw);
+                const formattedText = formatToText(jsonData);
+
                 await authenticatedFetch('/update-description', {
                     method: 'PUT',
-                    body: JSON.stringify({ issueKey: issueKey, newDescription: enhancedRaw })
+                    body: JSON.stringify({ issueKey: issueKey, newDescription: formattedText })
                 });
                 AP.jira.refreshIssuePage();
                 AP.dialog.close();

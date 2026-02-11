@@ -164,7 +164,10 @@ Write in a professional, detailed, explanatory style. Be thorough and specific.`
         // Parse and validate JSON
         const jsonResult = JSON.parse(cleanedText);
 
-        console.log('✅ Gemini returned valid JSON:', Object.keys(jsonResult));
+        console.log('------------------------------------------------');
+        console.log('✅ GEMINI GENERATED STRUCTURED JSON DATA:');
+        console.log(JSON.stringify(jsonResult, null, 2));
+        console.log('------------------------------------------------');
 
         res.json({ success: true, enhancedDescription: JSON.stringify(jsonResult, null, 2) });
     } catch (e) {
@@ -178,24 +181,31 @@ app.put('/update-description', authenticateSkipQsh, (req, res) => {
     const { issueKey, newDescription } = req.body;
     const httpClient = addon.httpClient(req);
 
-    httpClient.put({
-        url: `/rest/api/3/issue/${issueKey}`,
-        json: {
-            fields: {
-                description: {
-                    type: 'doc',
-                    version: 1,
-                    content: [
-                        {
-                            type: 'paragraph',
-                            content: [
-                                { type: 'text', text: newDescription }
-                            ]
-                        }
-                    ]
-                }
+    const updateBody = {
+        fields: {
+            description: {
+                type: 'doc',
+                version: 1,
+                content: [
+                    {
+                        type: 'paragraph',
+                        content: [
+                            { type: 'text', text: newDescription }
+                        ]
+                    }
+                ]
             }
         }
+    };
+
+    console.log('------------------------------------------------');
+    console.log('✅ UPDATING JIRA WITH JSON ADF STRUCTURE:');
+    console.log(JSON.stringify(updateBody, null, 2));
+    console.log('------------------------------------------------');
+
+    httpClient.put({
+        url: `/rest/api/3/issue/${issueKey}`,
+        json: updateBody
     }, (err, response, body) => {
         if (err || response.statusCode >= 400) {
             console.error('Jira update error:', err || body);
