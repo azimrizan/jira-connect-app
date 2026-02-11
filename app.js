@@ -71,7 +71,26 @@ app.post('/enhance-description', authenticateSkipQsh, async (req, res) => {
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: `Improve and expand this Jira issue description clearly and professionally:\n\n${currentDescription}`
+                            text: `You are a professional Jira issue enhancer. Convert the following vague issue description into a comprehensive, structured JSON format.
+
+Original Description: "${currentDescription}"
+
+Return ONLY valid JSON (no markdown, no code blocks) with these fields:
+{
+  "Executive Summary": {"Overview": "...", "Key Outcomes": ["..."]},
+  "Enhanced Jira Description": {"Title": "...", "Background": "...", "Impact Analysis": "...", "Additional Notes": ["..."]},
+  "Steps to Reproduce": ["..."],
+  "Actual Result": "...",
+  "Expected Result": "...",
+  "Acceptance Criteria": ["GIVEN...WHEN...THEN..."],
+  "Issue Type": "Bug|Story|Task",
+  "Priority": "Critical|High|Medium|Low",
+  "Validation Report": {"QA Results": "...", "Improvement Suggestions": "...", "Compliance Checks": "..."},
+  "Troubleshooting Guide": {"Common Issues": ["..."], "Solutions": ["..."]},
+  "Recommendations": ["..."]
+}
+
+Return ONLY the JSON object, no other text.`
                         }]
                     }]
                 })
@@ -83,7 +102,18 @@ app.post('/enhance-description', authenticateSkipQsh, async (req, res) => {
 
         if (!enhanced) throw new Error('Invalid Gemini response');
 
-        res.json({ success: true, enhancedDescription: enhanced.trim() });
+        // Clean and parse JSON response
+        let cleanedText = enhanced.trim();
+        if (cleanedText.startsWith('```json')) {
+            cleanedText = cleanedText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+        } else if (cleanedText.startsWith('```')) {
+            cleanedText = cleanedText.replace(/```\s*/g, '');
+        }
+
+        // Validate it's valid JSON
+        const jsonResult = JSON.parse(cleanedText);
+
+        res.json({ success: true, enhancedDescription: JSON.stringify(jsonResult, null, 2) });
     } catch (e) {
         console.error('Gemini error:', e);
         res.status(500).json({ success: false, error: e.message });
