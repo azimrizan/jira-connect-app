@@ -3,31 +3,127 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Refine with AAVA</title>
+    <title>Enhanced Description</title>
     <script src="https://connect-cdn.atl-paas.net/all.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
         body {
+            height: 100%;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 14px;
+            color: #172B4D;
+            overflow: hidden;
+        }
+
+        /* Full-height flex layout */
+        .dialog-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
             padding: 20px;
         }
 
+        /* Content box - takes all available space */
+        .content-box {
+            flex: 1;
+            border: 1px solid #dfe1e6;
+            border-radius: 3px;
+            padding: 16px;
+            overflow-y: auto;
+            background: #fff;
+            line-height: 1.6;
+        }
+
+        .content-box h1,
+        .content-box h2,
+        .content-box h3 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 12px;
+            margin-bottom: 4px;
+        }
+
+        .content-box h1:first-child,
+        .content-box h2:first-child,
+        .content-box h3:first-child {
+            margin-top: 0;
+        }
+
+        .content-box p {
+            margin-bottom: 8px;
+        }
+
+        .content-box ul,
+        .content-box ol {
+            padding-left: 24px;
+            margin-bottom: 8px;
+        }
+
+        .content-box li {
+            margin-bottom: 4px;
+        }
+
+        /* Footer - pinned at bottom */
+        .dialog-footer {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            padding-top: 16px;
+            flex-shrink: 0;
+        }
+
+        button {
+            padding: 6px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            border: none;
+        }
+
+        #applyBtn {
+            background: #0052cc;
+            color: white;
+        }
+
+        #applyBtn:hover {
+            background: #0065ff;
+        }
+
+        #cancelBtn {
+            background: none;
+            color: #42526E;
+        }
+
+        #cancelBtn:hover {
+            text-decoration: underline;
+        }
+
+        /* Loading state */
         #loading {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 300px;
+            flex: 1;
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #0052cc;
+            width: 36px;
+            height: 36px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0052cc;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         @keyframes spin {
@@ -40,71 +136,6 @@
             }
         }
 
-        #content {
-            display: none;
-        }
-
-        /* Rendered Markdown Styling */
-        #result {
-            background: #f4f5f7;
-            padding: 15px;
-            max-height: 400px;
-            overflow-y: auto;
-            border-radius: 3px;
-            border: 1px solid #dfe1e6;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        #result h1,
-        #result h2,
-        #result h3 {
-            font-size: 16px;
-            margin-top: 10px;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-
-        #result ul {
-            margin-top: 5px;
-            padding-left: 20px;
-        }
-
-        .footer {
-            margin-top: 20px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        button {
-            padding: 8px 12px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-weight: 500;
-            border: none;
-        }
-
-        /* Primary button style */
-        #applyBtn {
-            background: #0052cc;
-            color: white;
-        }
-
-        #applyBtn:hover {
-            background: #0065ff;
-        }
-
-        /* Secondary/Cancel button style */
-        #cancelBtn {
-            background: rgba(9, 30, 66, 0.08);
-            color: #42526E;
-        }
-
-        #cancelBtn:hover {
-            background: rgba(9, 30, 66, 0.13);
-        }
-
         .error {
             color: #de350b;
             font-weight: bold;
@@ -115,23 +146,29 @@
 
 <body>
 
-    <div id="loading">
-        <div class="spinner"></div>
-        <p>Generating enhanced description...</p>
-    </div>
+    <div class="dialog-wrapper">
 
-    <div id="content">
-        <!-- Use div for rendered HTML -->
-        <div id="result"></div>
-
-        <div class="footer">
-            <button id="cancelBtn">Cancel</button>
-            <button id="applyBtn">Replace description</button>
+        <!-- Loading State -->
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Generating enhanced description...</p>
         </div>
+
+        <!-- Content State (hidden initially) -->
+        <div id="content" style="display:none; flex:1; display:none; flex-direction:column; height:100%;">
+            <div class="content-box" id="result">
+                <!-- Rendered markdown goes here -->
+            </div>
+            <div class="dialog-footer">
+                <button id="cancelBtn">Cancel</button>
+                <button id="applyBtn">Replace description</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // HIDE DEFAULT JIRA DIALOG BUTTONS IMMEDIATELY
+        // Hide default Jira dialog buttons
         AP.dialog.getButton('submit').hide();
         AP.dialog.getButton('cancel').hide();
 
@@ -139,7 +176,6 @@
         let currentDesc = '';
         let enhancedRaw = '';
 
-        // Helper to fetch with JWT (Skip QSH handled by backend, but we need token)
         async function authenticatedFetch(url, options = {}) {
             return new Promise((resolve, reject) => {
                 AP.context.getToken(async (token) => {
@@ -152,7 +188,6 @@
                                 'Content-Type': 'application/json'
                             }
                         });
-
                         if (!res.ok) {
                             const text = await res.text();
                             try {
@@ -162,9 +197,7 @@
                                 throw new Error(`Server Error (${res.status}): ${text}`);
                             }
                         }
-
-                        const data = await res.json();
-                        resolve(data);
+                        resolve(await res.json());
                     } catch (e) {
                         reject(e);
                     }
@@ -173,79 +206,68 @@
         }
 
         function showError(msg) {
-            document.getElementById('loading').innerHTML = `<p class="error">${msg}</p>`;
+            document.getElementById('loading').innerHTML = '<p class="error">' + msg + '</p>';
         }
 
-        // Start logic immediately
-        AP.context.getContext(ctx => {
+        // Start immediately
+        AP.context.getContext(function (ctx) {
             issueKey = ctx.jira.issue.key;
             startRefinement();
         });
 
         async function startRefinement() {
-            try {
-                // 1. Get Description
-                AP.request({
-                    url: `/rest/api/3/issue/${issueKey}?expand=renderedFields`,
-                    success: async (res) => {
-                        const data = JSON.parse(res);
-                        currentDesc = data.renderedFields?.description?.replace(/<[^>]+>/g, '') || '';
+            AP.request({
+                url: '/rest/api/3/issue/' + issueKey + '?expand=renderedFields',
+                success: async function (res) {
+                    var data = JSON.parse(res);
+                    currentDesc = data.renderedFields && data.renderedFields.description
+                        ? data.renderedFields.description.replace(/<[^>]+>/g, '')
+                        : '';
 
-                        // 2. Enhance via Backend
-                        try {
-                            const data = await authenticatedFetch('/enhance-description', {
-                                method: 'POST',
-                                body: JSON.stringify({ currentDescription: currentDesc })
-                            });
+                    try {
+                        var result = await authenticatedFetch('/enhance-description', {
+                            method: 'POST',
+                            body: JSON.stringify({ currentDescription: currentDesc })
+                        });
 
-                            enhancedRaw = data.enhancedDescription;
-                            // Use marked to render the markdown
-                            document.getElementById('result').innerHTML = marked.parse(enhancedRaw);
+                        enhancedRaw = result.enhancedDescription;
+                        document.getElementById('result').innerHTML = marked.parse(enhancedRaw);
 
-                            document.getElementById('loading').style.display = 'none';
-                            document.getElementById('content').style.display = 'block';
+                        // Switch from loading to content
+                        document.getElementById('loading').style.display = 'none';
+                        var contentEl = document.getElementById('content');
+                        contentEl.style.display = 'flex';
+                        contentEl.style.flexDirection = 'column';
+                        contentEl.style.flex = '1';
 
-                            // Resize dialog to fit content if possible
-                            AP.resize('100%', '100%');
-
-                        } catch (e) {
-                            showError("Refinement Failed: " + e.message);
-                        }
-                    },
-                    error: () => {
-                        showError("Failed to load issue description.");
+                    } catch (e) {
+                        showError('Refinement Failed: ' + e.message);
                     }
-                });
-            } catch (e) {
-                showError(e.message);
-            }
+                },
+                error: function () {
+                    showError('Failed to load issue description.');
+                }
+            });
         }
 
-        document.getElementById('cancelBtn').onclick = () => {
+        document.getElementById('cancelBtn').onclick = function () {
             AP.dialog.close();
         };
 
-        document.getElementById('applyBtn').onclick = async () => {
-            const btn = document.getElementById('applyBtn');
+        document.getElementById('applyBtn').onclick = async function () {
+            var btn = document.getElementById('applyBtn');
             btn.disabled = true;
             btn.innerText = 'Applying...';
 
             try {
                 await authenticatedFetch('/update-description', {
                     method: 'PUT',
-                    // Send raw text if you want markdown in Jira, or HTML?
-                    // Jira API v3 ("doc" format) usually takes structured JSON.
-                    // Wait, app.js logic converts simple text to a paragraph node.
-                    // We actually want to send the raw markdown text so Jira renders it?
-                    // Or if the backend returns markdown, we should probably strip it or convert to ADF.
-                    // For now, let's just send the raw text from Gemini, which is markdown-ish.
-                    body: JSON.stringify({ issueKey, newDescription: enhancedRaw })
+                    body: JSON.stringify({ issueKey: issueKey, newDescription: enhancedRaw })
                 });
-
                 AP.jira.refreshIssuePage();
                 AP.dialog.close();
             } catch (e) {
-                alert("Failed to update: " + e.message);
+                alert('Failed to update: ' + e.message);
                 btn.disabled = false;
                 btn.innerText = 'Replace description';
             }
